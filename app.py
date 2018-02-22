@@ -2,20 +2,37 @@ import os
 from collections import defaultdict
 
 from flask import Flask, jsonify, render_template
-from flask_sqlalchemy import SQLAlchemy
 from bokeh.plotting import figure
 from bokeh.resources import INLINE
 from bokeh.embed import components
 import bokeh.palettes
 
+## Import statements from UMSI
+import os
+from flask import Flask, render_template, session, redirect, url_for, flash
+from flask_script import Manager, Shell
+from flask_wtf import FlaskForm
+from wtforms import StringField, SubmitField
+from wtforms.validators import Required
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate, MigrateCommand
 
-BASE = os.path.abspath(os.path.dirname(__file__))
-DATABASE_PATH = os.path.join(BASE, 'test.db')
-DATABSE_URI = os.getenv('DATABASE_URL', 'sqlite:///' + DATABASE_PATH)
-
+## App setup code
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = DATABSE_URI
-db = SQLAlchemy(app)
+app.debug = True
+app.use_reloader = True
+
+
+app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://localhost/test.db"
+app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+## Statements for db setup (and manager setup if using Manager)
+
+manager = Manager(app)
+db = SQLAlchemy(app) 
+migrate = Migrate(app, db) 
+manager.add_command('db', MigrateCommand) 
 
 import models
 
